@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from fastapi import FastAPI, Depends, HTTPException, status
 from database import Base, engine
 from sqlalchemy.orm import Session
