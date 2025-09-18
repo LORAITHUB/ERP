@@ -47,14 +47,7 @@ def read_me(current_user: User = Depends(get_current_user)):
 @app.get("/admin-only")
 def admin_only(current_user: User = Depends(require_role(["manager"]))):
     return {"message": f"Hello {current_user.name}, you are a manager!"}
-=======
-from fastapi import FastAPI
-app = FastAPI()
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
+    
 @app.get("/")
 def demo():
     return {'msg' : 'Hii'}
->>>>>>> 781602013f3d3619e8ca47b0f706436af54da93f
