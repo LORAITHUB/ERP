@@ -1,0 +1,164 @@
+# Backend Documentation – Hospitality ERP Suite
+
+The Hospitality ERP Suite is an integrated system designed for hotels and restaurants to
+streamline operations. It includes modules for reservations, inventory management, staff
+coordination, and billing. The backend is developed using FastAPI with MySQL as the
+database, providing scalability, security, and flexibility.
+
+## Features Implemented
+✅ User Registration & Login
+✅ Password Hashing (Bcrypt)
+✅ JWT Token Authentication
+✅ Role-Based Access Control (RBAC)
+✅ PostgreSQL database integration
+
+#Backend (Tech Stack):
+-FastAPI
+-PostgreSQL
+-SQLAlchemy
+–Pydantic
+–Passlib (Bcrypt)
+–Python-Jose
+–Uvicorn
+-CORS Middleware
+
+### APIs Available
+- 'register API'
+- `Login API`
+- 'profile'
+- 'manager-only'
+
+Project Structure
+ERP/
+│── main.py
+│── auth.py
+│── models.py
+│── schemas.py
+│── database.py
+
+Requirements:
+
+-Python 3.10+
+-PostgreSQL 13+
+-pgAdmin (optional, for viewing DB)
+
+Install Dependencies:
+
+-fastapi
+- pydantic[email]
+-python-jose
+-python-multipart
+-uvicorn
+-sqlalchemy
+-psycopg2-binary
+-passlib[bcrypt]
+-pyjwt
+-python-dotenv
+-bcrypt
+#Setup PostgreSQL
+Open psql or pgAdmin and run:
+CREATE DATABASE authdb;
+CREATE USER postgres WITH PASSWORD 'root';
+
+## ⚙️ Setup Instructions
+
+1. Clone the Repository
+```bash
+git clone https://github.com/LORAITHUB/ERP.git
+cd ERP
+
+## Installation and Setup Instructions
+2. Create Project Directory
+```
+mkdir hospitality
+cd ERP
+
+3. **Set Up a Virtual Environment**
+   ```bash
+   python -m venv env
+   env\Scripts\activate  # On Windows
+
+4.**install fastapi**
+  ```bash
+  pip install fastapi uvicorn sqlalchemy psycopg2-binary passlib[bcrypt] python-jose
+
+5.. **Final Setup and Run**
+  ```bash
+  uvicorn main:app --reload #run the server
+  pip freeze > requirements.txt  # Create Requirements File
+
+  ## API Documentation – Hospitality ERP Suite
+#This section documents the available API endpoints currently implemented in the backend.
+🔐 Authentication APIs
+1. register API
+Endpoint: /register/
+
+Method: POST
+
+Fields:
+ -name (string),
+ -email (Emailstr),
+ -password (string),
+ -role (string)
+
+Description: Registers a new user with provided credentials.
+
+2. Login API
+Endpoint: /login/
+Method: POST
+Fields:
+ -email (string)
+ -password(string)
+Description: Stores the login entry. (JWT token login implemented here)
+
+3. profile API
+Endpoint:/profile/
+method: GET
+Description: return the profile of user.
+
+4. Manager-only API
+Endpoint:/manager-only/
+method: GET
+Description: There is no access for staff and guest.
+
+##implementation
+
+1.Define Models:
+Create a User model in models.py with fields: id, username, email,password, and role.
+Use SQLAlchemy ORM to map it to the PostgreSQL users table.
+
+2.Create Schemas:
+
+Define Pydantic models in schemas.py for request/response validation:
+RegisterRequest → for registration input
+LoginRequest → for login input
+UserResponse → for returning user data
+TokenResponse → for JWT response
+
+3.Database Connection:
+Configure PostgreSQL in database.py
+
+4.Implement Authentication Logic:
+
+In auth.py, add functions for:
+-Password hashing & verification (passlib)
+-JWT token creation & decoding (python-jose)
+-User authentication (validate credentials)
+-Role-based access control (role_required dependency)
+-get_password_hash(password) → store hashed password
+-verify_password(plain, hashed) → check login password
+-create_access_token(data) → generate JWT
+-decode_access_token(token) → verify JWT
+
+5.In main.py, define endpoints:
+-POST /register → register new user
+-POST /login → login and return JWT
+-GET /profile → accessible by user and manager
+-GET /manager-only → accessible only by admin
+
+6.Set Up Role-Based Access:
+-Use dependency injection (Depends) to secure routes.
+
+7.Connect Everything:
+-FastAPI automatically integrates models (models.py), schemas (schemas.py), authentication logic (auth.py), and routes (main.py).
+-Database migrations are handled by SQLAlchemy (tables created with Base.metadata.create_all).
