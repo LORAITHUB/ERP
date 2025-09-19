@@ -1,53 +1,57 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from database import Base, engine
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from database import get_db
-from models import User
-from schemas import UserCreate, UserOut, TokenOut, LoginRequest
-from auth import get_password_hash,verify_password,create_access_token,get_current_user,require_role
+
+import models
+import schemas
+from database import engine, Base, get_db
+from auth import (
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    get_current_user,
+    require_roles
+)
+
+app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Hospitality ERP")
+@app.post("/register", response_model=schemas.UserResponse)
+def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
+    existing = db.query(models.User).filter(models.User.email == payload.email).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
-
-@app.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    if user_in.role not in ("manager", "staff", "guest"):
-        raise HTTPException(status_code=400, detail="Invalid role")
-
-    existing_user = db.query(User).filter(User.email == user_in.email).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    user = User(
-        name=user_in.name,
-        email=user_in.email,
-        password_hash=get_password_hash(user_in.password),
-        role=user_in.role,
+    user = models.User(
+        name=payload.name,
+        email=payload.email,
+        password_hash=get_password_hash(payload.password),
+        role=models.RoleEnum(payload.role.value)
     )
     db.add(user)
     db.commit()
     db.refresh(user)
     return user
 
-@app.post("/login", response_model=TokenOut)
-def login(login_req: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == login_req.email).first()
-    if not user or not verify_password(login_req.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+@app.post("/login", response_model=schemas.TokenResponse)
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.name == form_data.username).first()
+    if not user or not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
 
-    token = create_access_token({"sub": str(user.id), "role": user.role})
-    return {"access_token": token, "token_type": "bearer"}
+    token_payload = {"sub": str(user.id), "email": user.email, "role": user.role.value}
+    access_token = create_access_token(token_payload)
+    return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/me", response_model=UserOut)
-def read_me(current_user: User = Depends(get_current_user)):
+@app.get("/me", response_model=schemas.UserResponse)
+def me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
-@app.get("/admin-only")
-def admin_only(current_user: User = Depends(require_role(["manager"]))):
-    return {"message": f"Hello {current_user.name}, you are a manager!"}
-    
+@app.get("/manager-only")
+def manager_only(current_user: models.User = Depends(require_roles([models.RoleEnum.manager]))):
+    return {"message": f"Hello Manager {current_user.name}"}
+
 @app.get("/")
-def demo():
-    return {'msg' : 'Hii'}
+def root():
+    return {"status": "ok", "service": "auth"}
