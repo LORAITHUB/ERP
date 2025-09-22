@@ -69,7 +69,6 @@ def get_occupancy_report(session: Session = Depends(get_db)):
             "occupancy_rate": round(occupancy_rate, 2)
         }
     except Exception as e:
-        logging.exception("Error generating occupancy report")
         raise HTTPException(status_code=500, detail="Failed to generate occupancy report")
 
 @app.get("/reports/revenue")
@@ -81,7 +80,6 @@ def get_revenue_report(session: Session = Depends(get_db), start_date=None, end_
         total_revenue = sum([amount for (amount,) in query.all()])
         return {"total_revenue": round(total_revenue, 2)}
     except Exception as e:
-        logging.exception("Error generating revenue report")
         raise HTTPException(status_code=500, detail="Failed to generate revenue report")
 
 @app.get("/reports/staff-performance")
@@ -104,7 +102,6 @@ def get_staff_performance(session: Session = Depends(get_db)):
             }
         return performance
     except Exception as e:
-        logging.exception("Error generating staff performance report")
         raise HTTPException(status_code=500, detail="Failed to generate staff performance report")
 
 @app.post("/notifications/low-stock")
@@ -117,7 +114,6 @@ def trigger_low_stock_alert(session: Session = Depends(get_db)):
         ]
         return alerts
     except Exception as e:
-        logging.exception("Error triggering low stock alert")
         raise HTTPException(status_code=500, detail="Failed to trigger low stock alert")
 
 @app.post("/notifications/over_booking")
@@ -143,6 +139,5 @@ def trigger_overbooking_alert(session: Session = Depends(get_db)):
                     })
         return alerts
     except Exception as e:
-        logging.exception("Error checking for overbooking")
         raise HTTPException(status_code=500, detail="Failed to check for overbooking")
 
