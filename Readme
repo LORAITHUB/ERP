@@ -2,7 +2,7 @@
 
 The Hospitality ERP Suite is an integrated system designed for hotels and restaurants to
 streamline operations. It includes modules for reservations, inventory management, staff
-coordination, and billing. The backend is developed using FastAPI with MySQL as the
+coordination, and billing. The backend is developed using FastAPI with PostgreSQL as the
 database, providing scalability, security, and flexibility.
 
 ## Features Implemented
