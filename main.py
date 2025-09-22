@@ -59,7 +59,6 @@ def root():
     return {"status": "ok", "service": "auth"}
 
 
-#naveetask
 
 @app.get("/rooms", response_model=list[schemas.Room])
 def get_rooms(db: Session = Depends(get_db)):
