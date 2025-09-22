@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 import models
 import schemas
+import crud
+import database
 from database import engine, Base, get_db
 from auth import (
     get_password_hash,
@@ -56,6 +58,48 @@ def manager_only(current_user: models.User = Depends(require_roles([models.RoleE
 def root():
     return {"status": "ok", "service": "auth"}
 
+
+#naveetask
+
+@app.get("/rooms", response_model=list[schemas.Room])
+def get_rooms(db: Session = Depends(get_db)):
+    return crud.get_rooms(db)
+
+@app.post("/rooms", response_model=schemas.Room)
+def create_room(room: schemas.RoomCreate, db: Session = Depends(get_db)):
+    return crud.create_room(db, room)
+
+
+@app.put("/rooms/{room_id}/status")
+def update_room_status(room_id: int, update: schemas.RoomStatusUpdate, db: Session = Depends(get_db)):
+    room = crud.update_room_status(db, room_id, update.status)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return {"message": f"Room {room_id} status updated to {update.status}"}
+
+# ---- Bookings ----
+@app.post("/bookings", response_model=schemas.Booking)
+def create_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)):
+    return crud.create_booking(db, booking)
+
+@app.put("/bookings/{booking_id}/checkin", response_model=schemas.Booking)
+def checkin_booking(booking_id: int, db: Session = Depends(get_db)):
+    return crud.checkin_booking(db, booking_id)
+
+@app.put("/bookings/{booking_id}/checkout", response_model=schemas.Booking)
+def checkout_booking(booking_id: int, db: Session = Depends(get_db)):
+    return crud.checkout_booking(db, booking_id)
+
+# ---- Housekeeping ----
+@app.post("/housekeeping", response_model=schemas.Housekeeping)
+def create_housekeeping(hk: schemas.HousekeepingCreate, db: Session = Depends(get_db)):
+    return crud.create_housekeeping(db, hk)
+
+@app.put("/housekeeping/{hk_id}", response_model=schemas.Housekeeping)
+def update_housekeeping(hk_id: int, status: str, db: Session = Depends(get_db)):
+    return crud.update_housekeeping(db, hk_id, status)
+
+'''
 
 @app.get("/reports/occupancy")
 def get_occupancy_report(session: Session = Depends(get_db)):
@@ -141,3 +185,4 @@ def trigger_overbooking_alert(session: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to check for overbooking")
 
+'''

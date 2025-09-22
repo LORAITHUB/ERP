@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey, TIMESTAMP
 from database import Base
+from sqlalchemy.orm import relationship
 import enum
 
 class RoleEnum(str, enum.Enum):
@@ -16,6 +17,41 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     role = Column(Enum(RoleEnum), default=RoleEnum.guest, nullable=False)
 
+
+#naveetask
+class Room(Base):
+    __tablename__ = "rooms"
+
+    id = Column(Integer, primary_key=True, index=True)
+    room_number = Column(String, unique=True, nullable=False,index=True)
+    status = Column(String, default="available")  # available, booked, occupied, cleaning
+
+    bookings = relationship("Booking", back_populates="room")
+    housekeeping = relationship("Housekeeping", back_populates="room")
+
+
+class Booking(Base):
+    __tablename__ = "bookings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    room_id = Column(Integer, ForeignKey("rooms.id"))
+    check_in = Column(TIMESTAMP)
+    check_out = Column(TIMESTAMP)
+    status = Column(String, default="booked")  # booked, checked_in, checked_out
+
+    room = relationship("Room", back_populates="bookings")
+
+
+class Housekeeping(Base):
+    __tablename__ = "housekeeping"
+
+    id = Column(Integer, primary_key=True, index=True)
+    room_id = Column(Integer, ForeignKey("rooms.id"))
+    status = Column(String, default="pending")  # pending, completed
+
+    room = relationship("Room", back_populates="housekeeping")
+
+'''
 class RoomType(enum.Enum):
     single = "single"
     double = "double"
@@ -32,7 +68,7 @@ class Room(Base):
     room_number = Column(String, nullable=False, unique=True)
     type = Column(Enum(RoomType), nullable=False)
     status = Column(Enum(RoomStatus), nullable=False)
-    price = Column(Float, nullable=False)
+    price = Column(int, nullable=False)
 
 class BookingStatus(enum.Enum):
     booked = "booked"
@@ -94,3 +130,4 @@ class Billing(Base):
     payment_status = Column(String, nullable=False)
     payment_method = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False)
+'''

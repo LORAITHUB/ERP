@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr,constr
 from typing import Optional
+from datetime import datetime
 import enum
 
 class Role(str, enum.Enum):
@@ -31,3 +32,48 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+#naveetask
+class RoomBase(BaseModel):
+    room_number: str
+    status: Optional[str] = "available"
+
+class RoomCreate(RoomBase):
+    pass
+
+class Room(RoomBase):
+    id: int
+    class Config:
+        from_attributes = True
+
+class RoomStatusUpdate(BaseModel):
+    status: str        
+
+
+class BookingBase(BaseModel):
+    room_id: int
+    check_in: datetime
+    check_out: datetime
+    status: Optional[str] = "booked"
+
+class BookingCreate(BookingBase):
+    pass
+
+class Booking(BookingBase):
+    id: int
+    class Config:
+        from_attributes = True
+
+
+class HousekeepingBase(BaseModel):
+    room_id: int
+    status: Optional[str] = "pending"
+
+class HousekeepingCreate(HousekeepingBase):
+    pass
+
+class Housekeeping(HousekeepingBase):
+    id: int
+    class Config:
+        from_attributes = True
+    
