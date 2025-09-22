@@ -12,6 +12,14 @@ database, providing scalability, security, and flexibility.
 ✅ Role-Based Access Control (RBAC)
 ✅ PostgreSQL database integration
 
+-Rooms: Add rooms, list rooms, update room status
+
+-Bookings: Create bookings, check-in, check-out
+
+-Housekeeping: Assign housekeeping tasks
+
+-Authentication Ready: Manager/Staff role-based endpoints
+
 #Backend (Tech Stack):
 -FastAPI
 -PostgreSQL
@@ -129,6 +137,14 @@ Description: return the profile of user.
 Endpoint:/manager-only/
 method: GET
 Description: There is no access for staff and guest.
+
+5 PUT /bookings/{id}/checkin → Mark check-in
+
+PUT /bookings/{id}/checkout → Mark check-out
+
+🔹 Housekeeping
+
+POST /housekeeping → Add housekeeping task
 
 ##implementation
 
