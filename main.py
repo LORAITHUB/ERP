@@ -98,6 +98,96 @@ def create_housekeeping(hk: schemas.HousekeepingCreate, db: Session = Depends(ge
 def update_housekeeping(hk_id: int, status: str, db: Session = Depends(get_db)):
     return crud.update_housekeeping(db, hk_id, status)
 
+@app.get("/tables", response_model=list[schemas.TableResponse])
+def list_tables(db: Session = Depends(get_db)):
+    return db.query(models.Table).all()
+
+
+@app.post('/create_tables', response_model=schemas.TableResponse)
+def create_table(req: schemas.TableResponse, db: Session = Depends(get_db)):
+    existing_table = db.query(models.Table).filter(models.Table.table_number == req.table_number).first()
+    if existing_table:
+        raise HTTPException(status_code=400, detail="Table number already exists")
+
+    
+    table = models.Table(
+        table_number=req.table_number,
+        capacity=req.capacity,
+        status=req.status
+    )
+    db.add(table)
+    db.commit()
+    db.refresh(table)
+    return table
+
+
+@app.post("/reservations", response_model=schemas.ReservationResponse)
+def create_reservation(req: schemas.CreateReservation, db: Session = Depends(get_db)):
+    table = db.query(models.Table).filter(models.Table.id == req.table_id).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+
+    reservation = models.Reservation(
+        user_id=req.user_id,
+        table_id=req.table_id,
+        reservation_time=req.reservation_time
+    )
+    db.add(reservation)
+    db.commit()
+    db.refresh(reservation)
+    return reservation
+
+@app.get("/menu", response_model=list[schemas.MenuItemResponse])
+def list_menu(db: Session = Depends(get_db)):
+    return db.query(models.MenuItem).all()
+
+@app.post("/menu", response_model=schemas.MenuItemResponse)
+def add_menu_item(req: schemas.CreateMenuItem, db: Session = Depends(get_db)):
+    item = models.MenuItem(**req.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@app.post("/orders", response_model=schemas.OrderResponse)
+def create_order(req: schemas.CreateOrder, db: Session = Depends(get_db)):
+    order = models.Order(
+        table_id=req.table_id,
+        staff_id=req.staff_id,
+        total_price=0
+    )
+    db.add(order)
+    db.flush()  
+
+    total_price = 0
+    for item in req.items:
+        order_item = models.OrderItem(
+            order_id=order.id,
+            menu_item_id=item.menu_item_id,
+            quantity=item.quantity,
+            price=item.price
+        )
+        total_price += item.price * item.quantity
+        db.add(order_item)
+
+    order.total_price = total_price
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+@app.put("/orders/{order_id}/status", response_model=schemas.OrderResponse)
+def update_order_status(order_id: int, req: schemas.UpdateOrderStatus, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    order.status = req.status
+    db.commit()
+    db.refresh(order)
+    return order
+
+
 '''
 
 @app.get("/reports/occupancy")
