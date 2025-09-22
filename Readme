@@ -27,6 +27,10 @@ database, providing scalability, security, and flexibility.
 - `Login API`
 - 'profile'
 - 'manager-only'
+- 'checkin booking'
+- 'checkout booking'
+- 'create housekeeping'
+-'update housekeeping
 
 Project Structure
 ERP/
@@ -35,6 +39,7 @@ ERP/
 │── models.py
 │── schemas.py
 │── database.py
+-- crud.py
 
 Requirements:
 
@@ -59,6 +64,7 @@ Install Dependencies:
 Open psql or pgAdmin and run:
 CREATE DATABASE authdb;
 CREATE USER postgres WITH PASSWORD 'root';
+create user postgres with password 'naveen123';
 
 ## ⚙️ Setup Instructions
 
@@ -71,6 +77,9 @@ cd ERP
 2. Create Project Directory
 ```
 mkdir hospitality
+cd ERP
+
+mkdir hoteltask_merge
 cd ERP
 
 3. **Set Up a Virtual Environment**
