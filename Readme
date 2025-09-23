@@ -119,7 +119,7 @@ Method: POST
 Fields:
  -name (string),
  -email (Emailstr),
- -password (string),
+ -password (string),#password should be one uppercase, special charcter and having charcter(8-15)
  -role (string)
 
 Description: Registers a new user with provided credentials.
