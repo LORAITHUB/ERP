@@ -51,6 +51,9 @@ class Housekeeping(Base):
 
     room = relationship("Room", back_populates="housekeeping")
 
+    staff_id = Column(Integer, ForeignKey("staff.id"))  # <-- Add staff_id column
+    staff = relationship("Staff") 
+
 '''
 class RoomType(enum.Enum):
     single = "single"

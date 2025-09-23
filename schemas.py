@@ -68,6 +68,7 @@ class Booking(BookingBase):
 class HousekeepingBase(BaseModel):
     room_id: int
     status: Optional[str] = "pending"
+    staff_id: int
 
 class HousekeepingCreate(HousekeepingBase):
     pass

@@ -27,6 +27,9 @@ database, providing scalability, security, and flexibility.
 - `Login API`
 - 'profile'
 - 'manager-only'
+- 'checking booking'
+- 'checkout booking'
+
 
 Project Structure
 ERP/
@@ -35,6 +38,8 @@ ERP/
 │── models.py
 │── schemas.py
 │── database.py
+
+
 
 Requirements:
 
@@ -72,6 +77,8 @@ cd ERP
 ```
 mkdir hospitality
 cd ERP
+
+mkdir hot
 
 3. **Set Up a Virtual Environment**
    ```bash
