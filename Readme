@@ -38,11 +38,15 @@ database, providing scalability, security, and flexibility.
 - 'checkin booking'
 - 'checkout booking'
 - 'create housekeeping'
--'update housekeeping
--'GET/inventory'
--'POST/inventory'
--'PUT/inventory/{id}'
--'GET/inventory/low-stock'-(quantity < threshold)
+- 'update housekeeping
+- 'list tables'
+- 'create tables'
+- 'create reservations'
+- 'list menu items'
+- 'GET/inventory'
+- 'POST/inventory'
+- 'PUT/inventory/{id}'
+- 'GET/inventory/low-stock'-(quantity < threshold)
 
 Project Structure
 ERP/
@@ -51,7 +55,7 @@ ERP/
 │── models.py
 │── schemas.py
 │── database.py
--- crud.py
+│── crud.py
 
 Requirements:
 
@@ -163,6 +167,10 @@ RegisterRequest → for registration input
 LoginRequest → for login input
 UserResponse → for returning user data
 TokenResponse → for JWT response
+TableResponse → Represents the details of a table when retrieving data
+CreateTable → Used to create a new table
+CreateReservation → Used to submit a new reservation
+ReservationResponse → Returns the details of a reservation
 
 3.Database Connection:
 Configure PostgreSQL in database.py
@@ -184,6 +192,10 @@ In auth.py, add functions for:
 -POST /login → login and return JWT
 -GET /profile → accessible by user and manager
 -GET /manager-only → accessible only by admin
+-GET /tables → Retrieve a list of all tables.
+-POST /create_tables → Create a new table with table number, capacity, and status.
+-POST /reservations → Create a new reservation for a table.
+-GET /menu_items → Retrieve a list of all menu items.
 
 6.Set Up Role-Based Access:
 -Use dependency injection (Depends) to secure routes.
