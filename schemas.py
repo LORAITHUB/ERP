@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr,constr
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 import enum
 
@@ -33,7 +33,6 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-#naveetask
 class RoomBase(BaseModel):
     room_number: str
     status: Optional[str] = "available"
@@ -77,4 +76,119 @@ class Housekeeping(HousekeepingBase):
     id: int
     class Config:
         from_attributes = True
+
+
+class TableResponse(BaseModel):
+    id: int
+    table_number: int
+    capacity: int
+    status: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class CreateTable(BaseModel):
+    table_number: int
+    capacity: int
+    status: str
+
+
+
+class CreateReservation(BaseModel):
+    user_id: int
+    table_id: int
+    reservation_time: datetime
+
+class ReservationResponse(BaseModel):
+    id: int
+    user_id: int
+    table_id: int
+    reservation_time: datetime
+    status: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class CreateMenuItem(BaseModel):
+    name: str
+    price: float
+    availability: str
+    category: str
+
+class MenuItemResponse(BaseModel):
+    id: int
+    name: str
+    price: float
+    availability: str
+    category: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class CreateOrderItem(BaseModel):
+    menu_item_id: int
+    quantity: int
+    price: float
+
+class CreateOrder(BaseModel):
+    table_id: int
+    staff_id: int
+    items: List[CreateOrderItem]
+
+class OrderResponse(BaseModel):
+    id: int
+    table_id: int
+    staff_id: int
+    total_price: float
+    status: str
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class UpdateOrderStatus(BaseModel):
+    status: str
+
+
+class BillingBase(BaseModel):
+    booking_id: Optional[int] = None
+    order_id: Optional[int] = None
+    total_amount: float
     
+class BillingCreate(BillingBase):
+    pass
+
+class BillingOut(BillingBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class InventoryBase(BaseModel):
+    item_name: str
+    quantity: int
+    unit: str
+    threshold: int
+
+
+class InventoryItemCreate(InventoryBase):
+    pass
+
+class InventoryItemUpdate(BaseModel):
+    quantity: int
+
+class InventoryOut(InventoryBase):
+    id: int
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+

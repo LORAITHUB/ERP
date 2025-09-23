@@ -59,7 +59,6 @@ def root():
     return {"status": "ok", "service": "auth"}
 
 
-#naveetask
 
 @app.get("/rooms", response_model=list[schemas.Room])
 def get_rooms(db: Session = Depends(get_db)):
@@ -99,7 +98,139 @@ def create_housekeeping(hk: schemas.HousekeepingCreate, db: Session = Depends(ge
 def update_housekeeping(hk_id: int, status: str, db: Session = Depends(get_db)):
     return crud.update_housekeeping(db, hk_id, status)
 
-'''
+@app.get("/tables", response_model=list[schemas.TableResponse])
+def list_tables(db: Session = Depends(get_db)):
+    return db.query(models.Table).all()
+
+
+@app.post('/create_tables', response_model=schemas.TableResponse)
+def create_table(req: schemas.TableResponse, db: Session = Depends(get_db)):
+    existing_table = db.query(models.Table).filter(models.Table.table_number == req.table_number).first()
+    if existing_table:
+        raise HTTPException(status_code=400, detail="Table number already exists")
+
+    
+    table = models.Table(
+        table_number=req.table_number,
+        capacity=req.capacity,
+        status=req.status
+    )
+    db.add(table)
+    db.commit()
+    db.refresh(table)
+    return table
+
+
+@app.post("/reservations", response_model=schemas.ReservationResponse)
+def create_reservation(req: schemas.CreateReservation, db: Session = Depends(get_db)):
+    table = db.query(models.Table).filter(models.Table.id == req.table_id).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+
+    reservation = models.Reservation(
+        user_id=req.user_id,
+        table_id=req.table_id,
+        reservation_time=req.reservation_time
+    )
+    db.add(reservation)
+    db.commit()
+    db.refresh(reservation)
+    return reservation
+
+@app.get("/menu", response_model=list[schemas.MenuItemResponse])
+def list_menu(db: Session = Depends(get_db)):
+    return db.query(models.MenuItem).all()
+
+@app.post("/menu", response_model=schemas.MenuItemResponse)
+def add_menu_item(req: schemas.CreateMenuItem, db: Session = Depends(get_db)):
+    item = models.MenuItem(**req.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@app.post("/orders", response_model=schemas.OrderResponse)
+def create_order(req: schemas.CreateOrder, db: Session = Depends(get_db)):
+    order = models.Order(
+        table_id=req.table_id,
+        staff_id=req.staff_id,
+        total_price=0
+    )
+    db.add(order)
+    db.flush()  
+
+    total_price = 0
+    for item in req.items:
+        order_item = models.OrderItem(
+            order_id=order.id,
+            menu_item_id=item.menu_item_id,
+            quantity=item.quantity,
+            price=item.price
+        )
+        total_price += item.price * item.quantity
+        db.add(order_item)
+
+    order.total_price = total_price
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+@app.put("/orders/{order_id}/status", response_model=schemas.OrderResponse)
+def update_order_status(order_id: int, req: schemas.UpdateOrderStatus, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    order.status = req.status
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+@app.post("/billing", response_model=schemas.BillingOut)
+def create_billing(bill: schemas.BillingCreate, db: Session = Depends(get_db)):
+    db_bill = models.Billing(**bill.dict())
+    db.add(db_bill)
+    db.commit()
+    db.refresh(db_bill)
+    return db_bill
+
+@app.get("/billing/{id}", response_model=schemas.BillingOut)
+def get_billing(id: int, db: Session = Depends(get_db)):
+    bill = db.query(models.Billing).filter(models.Billing.id == id).first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Billing not found")
+    return bill
+ 
+
+@app.get("/inventory", response_model=list[schemas.InventoryOut])
+def list_inventory(db: Session = Depends(database.get_db)):
+    return crud.get_inventory_items(db)
+
+@app.post("/inventory", response_model=schemas.InventoryOut)
+def add_inventory(item: schemas.InventoryItemCreate, db: Session = Depends(database.get_db)):
+    return crud.create_inventory_item(db, item)
+
+@app.put("/{item_id}", response_model=schemas.InventoryOut)
+def update_inventory(
+    item_id: int, 
+    update: schemas.InventoryItemUpdate, 
+    db: Session = Depends(database.get_db)
+):
+    updated_item = crud.update_inventory_quantity(db, item_id, update.quantity)
+    
+    if not updated_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Inventory item with id {item_id} not found."
+        )
+    return updated_item
+
+@app.get("/inventory/low-stock")
+def low_stock_items(db: Session = Depends(get_db)):
+    items = crud.get_low_stock_items(db)
+    return items
 
 @app.get("/reports/occupancy")
 def get_occupancy_report(session: Session = Depends(get_db)):
@@ -118,10 +249,9 @@ def get_occupancy_report(session: Session = Depends(get_db)):
 @app.get("/reports/revenue")
 def get_revenue_report(session: Session = Depends(get_db), start_date=None, end_date=None):
     try:
-        query = session.query(Billing.total_amount).filter(Billing.payment_status == 'paid')
         if start_date and end_date:
-            query = query.filter(Billing.created_at.between(start_date, end_date))
-        total_revenue = sum([amount for (amount,) in query.all()])
+            period_billings = session.query(Billing).filter(Billing.created_at.between(start_date, end_date))
+        total_revenue = sum([amount for (total_amount,) in period_billings.all()])
         return {"total_revenue": round(total_revenue, 2)}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to generate revenue report")
@@ -132,7 +262,7 @@ def get_staff_performance(session: Session = Depends(get_db)):
         staff_ids = session.query(User.id).filter(User.role == 'staff').all()
         performance = {}
         for (staff_id,) in staff_ids:
-            completed_tasks = session.query(Housekeeping).filter(
+            completed_hk = session.query(Housekeeping).filter(
                 Housekeeping.staff_id == staff_id,
                 Housekeeping.status == 'completed'
             ).count()
@@ -141,7 +271,7 @@ def get_staff_performance(session: Session = Depends(get_db)):
                 Order.status.in_(['served', 'billed'])
             ).count()
             performance[staff_id] = {
-                "housekeeping_completed": completed_tasks,
+                "housekeeping_completed": completed_hk,
                 "orders_served": orders_served
             }
         return performance
@@ -184,5 +314,3 @@ def trigger_overbooking_alert(session: Session = Depends(get_db)):
         return alerts
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to check for overbooking")
-
-'''

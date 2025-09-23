@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
-import models, schemas
+import schemas,models
 
-# ---- Rooms ----
+
+
 def get_rooms(db: Session):
     return db.query(models.Room).all()
 
@@ -20,14 +21,13 @@ def update_room_status(db: Session, room_id: int, status: str):
         db.refresh(db_room)
     return db_room
 
-# ---- Bookings ----
 def create_booking(db: Session, booking: schemas.BookingCreate):
     db_booking = models.Booking(**booking.dict())
     db.add(db_booking)
     db.commit()
     db.refresh(db_booking)
 
-    # mark room as booked
+   
     update_room_status(db, booking.room_id, "booked")
     return db_booking
 
@@ -49,7 +49,7 @@ def checkout_booking(db: Session, booking_id: int):
         db.refresh(booking)
     return booking
 
-# ---- Housekeeping ----
+
 def create_housekeeping(db: Session, housekeeping: schemas.HousekeepingCreate):
     db_hk = models.Housekeeping(**housekeeping.dict())
     db.add(db_hk)
@@ -66,3 +66,29 @@ def update_housekeeping(db: Session, hk_id: int, status: str):
         db.commit()
         db.refresh(db_hk)
     return db_hk
+
+
+def get_inventory_items(db: Session):
+    return db.query(models.Inventory).all()
+
+def create_inventory_item(db: Session, item: schemas.InventoryItemCreate):
+    
+    db_item = models.Inventory(**item.dict())
+    
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+def update_inventory_quantity(db: Session, item_id: int, quantity: int):
+    
+    db_item = db.query(models.Inventory).filter(models.Inventory.id == item_id).first()
+    
+    if db_item:
+        db_item.quantity = quantity
+        db.commit()
+        db.refresh(db_item)
+    return db_item
+
+def get_low_stock_items(db: Session):
+    return db.query(models.Inventory).filter(models.Inventory.quantity < models.Inventory.threshold).all()

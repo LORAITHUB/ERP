@@ -12,6 +12,14 @@ database, providing scalability, security, and flexibility.
 ✅ Role-Based Access Control (RBAC)
 ✅ PostgreSQL database integration
 
+-Rooms: Add rooms, list rooms, update room status
+
+-Bookings: Create bookings, check-in, check-out
+
+-Housekeeping: Assign housekeeping tasks
+
+-Authentication Ready: Manager/Staff role-based endpoints
+
 #Backend (Tech Stack):
 -FastAPI
 -PostgreSQL
@@ -27,9 +35,24 @@ database, providing scalability, security, and flexibility.
 - `Login API`
 - 'profile'
 - 'manager-only'
+<<<<<<< HEAD
 - 'checking booking'
 - 'checkout booking'
 
+=======
+- 'checkin booking'
+- 'checkout booking'
+- 'create housekeeping'
+- 'update housekeeping
+- 'list tables'
+- 'create tables'
+- 'create reservations'
+- 'list menu items'
+- 'GET/inventory'
+- 'POST/inventory'
+- 'PUT/inventory/{id}'
+- 'GET/inventory/low-stock'-(quantity < threshold)
+>>>>>>> 7227cb2ed5c59ea220ded8dfcc8f1b76e160caba
 
 Project Structure
 ERP/
@@ -38,6 +61,7 @@ ERP/
 │── models.py
 │── schemas.py
 │── database.py
+│── crud.py
 
 
 
@@ -64,6 +88,7 @@ Install Dependencies:
 Open psql or pgAdmin and run:
 CREATE DATABASE authdb;
 CREATE USER postgres WITH PASSWORD 'root';
+create user postgres with password 'naveen123';
 
 ## ⚙️ Setup Instructions
 
@@ -78,7 +103,12 @@ cd ERP
 mkdir hospitality
 cd ERP
 
+<<<<<<< HEAD
 mkdir hot
+=======
+mkdir hoteltask_merge
+cd ERP
+>>>>>>> 7227cb2ed5c59ea220ded8dfcc8f1b76e160caba
 
 3. **Set Up a Virtual Environment**
    ```bash
@@ -105,7 +135,7 @@ Method: POST
 Fields:
  -name (string),
  -email (Emailstr),
- -password (string),
+ -password (string),#password should be one uppercase, special charcter and having charcter(8-15)
  -role (string)
 
 Description: Registers a new user with provided credentials.
@@ -128,6 +158,14 @@ Endpoint:/manager-only/
 method: GET
 Description: There is no access for staff and guest.
 
+5 PUT /bookings/{id}/checkin → Mark check-in
+
+PUT /bookings/{id}/checkout → Mark check-out
+
+🔹 Housekeeping
+
+POST /housekeeping → Add housekeeping task
+
 ##implementation
 
 1.Define Models:
@@ -141,6 +179,10 @@ RegisterRequest → for registration input
 LoginRequest → for login input
 UserResponse → for returning user data
 TokenResponse → for JWT response
+TableResponse → Represents the details of a table when retrieving data
+CreateTable → Used to create a new table
+CreateReservation → Used to submit a new reservation
+ReservationResponse → Returns the details of a reservation
 
 3.Database Connection:
 Configure PostgreSQL in database.py
@@ -162,6 +204,10 @@ In auth.py, add functions for:
 -POST /login → login and return JWT
 -GET /profile → accessible by user and manager
 -GET /manager-only → accessible only by admin
+-GET /tables → Retrieve a list of all tables.
+-POST /create_tables → Create a new table with table number, capacity, and status.
+-POST /reservations → Create a new reservation for a table.
+-GET /menu_items → Retrieve a list of all menu items.
 
 6.Set Up Role-Based Access:
 -Use dependency injection (Depends) to secure routes.
@@ -169,3 +215,14 @@ In auth.py, add functions for:
 7.Connect Everything:
 -FastAPI automatically integrates models (models.py), schemas (schemas.py), authentication logic (auth.py), and routes (main.py).
 -Database migrations are handled by SQLAlchemy (tables created with Base.metadata.create_all).
+
+# Hospitality ERP – Inventory Service
+
+This service manages the *Inventory* of a hospitality business.  
+ quantities, units, thresholds, and shows low-stock alerts.
+
+##  Features
+GET /inventory` — List all items
+- `POST /inventory` — Add new item (manager)
+- `PUT /inventory/{id}` — Update item quantity
+- `GET /inventory/low-stock-  View low-stock items (quantity <= threshold)  
