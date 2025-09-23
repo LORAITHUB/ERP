@@ -51,7 +51,6 @@ class Housekeeping(Base):
 
     room = relationship("Room", back_populates="housekeeping")
 
-<<<<<<< HEAD
     staff_id = Column(Integer, ForeignKey("staff.id"))  # <-- Add staff_id column
     staff = relationship("Staff") 
 
@@ -151,4 +150,4 @@ class Inventory(Base):
     unit = Column(String(50), nullable=False)
     threshold = Column(Integer, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+'''
