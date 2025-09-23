@@ -232,38 +232,6 @@ def low_stock_items(db: Session = Depends(get_db)):
     items = crud.get_low_stock_items(db)
     return items
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-
 @app.get("/reports/occupancy")
 def get_occupancy_report(session: Session = Depends(get_db)):
     try:
@@ -347,5 +315,3 @@ def trigger_overbooking_alert(session: Session = Depends(get_db)):
         return alerts
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to check for overbooking")
-
-'''
