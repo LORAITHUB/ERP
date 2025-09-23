@@ -35,9 +35,6 @@ database, providing scalability, security, and flexibility.
 - `Login API`
 - 'profile'
 - 'manager-only'
-<<<<<<< HEAD
-- 'checking booking'
-- 'checkout booking'
 
 =======
 - 'checkin booking'
@@ -52,7 +49,6 @@ database, providing scalability, security, and flexibility.
 - 'POST/inventory'
 - 'PUT/inventory/{id}'
 - 'GET/inventory/low-stock'-(quantity < threshold)
->>>>>>> 7227cb2ed5c59ea220ded8dfcc8f1b76e160caba
 
 Project Structure
 ERP/
