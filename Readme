@@ -191,3 +191,14 @@ In auth.py, add functions for:
 7.Connect Everything:
 -FastAPI automatically integrates models (models.py), schemas (schemas.py), authentication logic (auth.py), and routes (main.py).
 -Database migrations are handled by SQLAlchemy (tables created with Base.metadata.create_all).
+
+# Hospitality ERP – Inventory Service
+
+This service manages the *Inventory* of a hospitality business.  
+ quantities, units, thresholds, and shows low-stock alerts.
+
+##  Features
+GET /inventory` — List all items
+- `POST /inventory` — Add new item (manager)
+- `PUT /inventory/{id}` — Update item quantity
+- `GET /inventory/low-stock-  View low-stock items (quantity <= threshold)  
