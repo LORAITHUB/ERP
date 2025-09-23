@@ -188,6 +188,50 @@ def update_order_status(order_id: int, req: schemas.UpdateOrderStatus, db: Sessi
     return order
 
 
+@app.post("/billing", response_model=schemas.BillingOut)
+def create_billing(bill: schemas.BillingCreate, db: Session = Depends(get_db)):
+    db_bill = models.Billing(**bill.dict())
+    db.add(db_bill)
+    db.commit()
+    db.refresh(db_bill)
+    return db_bill
+
+@app.get("/billing/{id}", response_model=schemas.BillingOut)
+def get_billing(id: int, db: Session = Depends(get_db)):
+    bill = db.query(models.Billing).filter(models.Billing.id == id).first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Billing not found")
+    return bill
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 
 @app.get("/reports/occupancy")

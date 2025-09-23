@@ -93,7 +93,7 @@ class CreateTable(BaseModel):
     status: str
 
 
-# ----------- Reservation -----------
+
 class CreateReservation(BaseModel):
     user_id: int
     table_id: int
@@ -110,7 +110,7 @@ class ReservationResponse(BaseModel):
         "from_attributes": True
     }
 
-# ----------- Menu -----------
+
 class CreateMenuItem(BaseModel):
     name: str
     price: float
@@ -128,7 +128,6 @@ class MenuItemResponse(BaseModel):
         "from_attributes": True
     }
 
-# ----------- Orders -----------
 class CreateOrderItem(BaseModel):
     menu_item_id: int
     quantity: int
@@ -153,3 +152,20 @@ class OrderResponse(BaseModel):
 
 class UpdateOrderStatus(BaseModel):
     status: str
+
+
+class BillingBase(BaseModel):
+    booking_id: Optional[int] = None
+    order_id: Optional[int] = None
+    total_amount: float
+    
+class BillingCreate(BillingBase):
+    pass
+
+class BillingOut(BillingBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Numeric, TIMESTAMP
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func,Enum, Numeric, TIMESTAMP,Float
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -119,6 +119,33 @@ class OrderItem(Base):
 
     order = relationship("Order", back_populates="order_items")
     menu_item = relationship("MenuItem", back_populates="order_items")
+
+
+class Billing(Base):
+    __tablename__ = "billing"
+
+    id = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, nullable=True)
+    order_id = Column(Integer, nullable=True)
+    total_amount = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 '''
