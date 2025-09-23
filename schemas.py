@@ -167,5 +167,27 @@ class BillingOut(BillingBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class InventoryBase(BaseModel):
+    item_name: str
+    quantity: int
+    unit: str
+    threshold: int
+
+
+class InventoryItemCreate(InventoryBase):
+    pass
+
+class InventoryItemUpdate(BaseModel):
+    quantity: int
+
+class InventoryOut(InventoryBase):
+    id: int
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
 

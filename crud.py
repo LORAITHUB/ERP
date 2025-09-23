@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-import models, schemas
+import schemas,models
+
 
 
 def get_rooms(db: Session):
@@ -66,3 +67,28 @@ def update_housekeeping(db: Session, hk_id: int, status: str):
         db.refresh(db_hk)
     return db_hk
 
+
+def get_inventory_items(db: Session):
+    return db.query(models.Inventory).all()
+
+def create_inventory_item(db: Session, item: schemas.InventoryItemCreate):
+    
+    db_item = models.Inventory(**item.dict())
+    
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+def update_inventory_quantity(db: Session, item_id: int, quantity: int):
+    
+    db_item = db.query(models.Inventory).filter(models.Inventory.id == item_id).first()
+    
+    if db_item:
+        db_item.quantity = quantity
+        db.commit()
+        db.refresh(db_item)
+    return db_item
+
+def get_low_stock_items(db: Session):
+    return db.query(models.Inventory).filter(models.Inventory.quantity < models.Inventory.threshold).all()

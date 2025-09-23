@@ -202,6 +202,36 @@ def get_billing(id: int, db: Session = Depends(get_db)):
     if not bill:
         raise HTTPException(status_code=404, detail="Billing not found")
     return bill
+ 
+
+@app.get("/inventory", response_model=list[schemas.InventoryOut])
+def list_inventory(db: Session = Depends(database.get_db)):
+    return crud.get_inventory_items(db)
+
+@app.post("/inventory", response_model=schemas.InventoryOut)
+def add_inventory(item: schemas.InventoryItemCreate, db: Session = Depends(database.get_db)):
+    return crud.create_inventory_item(db, item)
+
+@app.put("/{item_id}", response_model=schemas.InventoryOut)
+def update_inventory(
+    item_id: int, 
+    update: schemas.InventoryItemUpdate, 
+    db: Session = Depends(database.get_db)
+):
+    updated_item = crud.update_inventory_quantity(db, item_id, update.quantity)
+    
+    if not updated_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Inventory item with id {item_id} not found."
+        )
+    return updated_item
+
+@app.get("/inventory/low-stock")
+def low_stock_items(db: Session = Depends(get_db)):
+    items = crud.get_low_stock_items(db)
+    return items
+
 
 
 

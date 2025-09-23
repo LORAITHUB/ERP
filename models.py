@@ -128,7 +128,18 @@ class Billing(Base):
     booking_id = Column(Integer, nullable=True)
     order_id = Column(Integer, nullable=True)
     total_amount = Column(Float, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now()) 
+
+
+class Inventory(Base):
+    __tablename__ = "inventory"
+
+    id = Column(Integer, primary_key=True, index=True)
+    item_name = Column(String(255), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    unit = Column(String(50), nullable=False)
+    threshold = Column(Integer, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 

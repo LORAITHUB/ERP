@@ -39,6 +39,10 @@ database, providing scalability, security, and flexibility.
 - 'checkout booking'
 - 'create housekeeping'
 -'update housekeeping
+-'GET/inventory'
+-'POST/inventory'
+-'PUT/inventory/{id}'
+-'GET/inventory/low-stock'-(quantity < threshold)
 
 Project Structure
 ERP/
