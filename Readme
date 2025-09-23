@@ -212,6 +212,18 @@ In auth.py, add functions for:
 -FastAPI automatically integrates models (models.py), schemas (schemas.py), authentication logic (auth.py), and routes (main.py).
 -Database migrations are handled by SQLAlchemy (tables created with Base.metadata.create_all).
 
+Hospitality ERP - Billing
+
+A microservice for managing billing and POS (Point of Sale) in a restaurant/hotel system.
+It generates invoices for room stays or restaurant orders, and can be integrated with payment gateways.
+
+Database Schema : PostgreSQL
+
+FastAPI Endpoints :
+ - POST /billing – Generate bill (room stay or restaurant order)
+ - GET /billing/{id} – Fetch bill detail
+
+
 # Hospitality ERP – Inventory Service
 
 This service manages the *Inventory* of a hospitality business.  
