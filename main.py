@@ -249,10 +249,9 @@ def get_occupancy_report(session: Session = Depends(get_db)):
 @app.get("/reports/revenue")
 def get_revenue_report(session: Session = Depends(get_db), start_date=None, end_date=None):
     try:
-        query = session.query(Billing.total_amount).filter(Billing.payment_status == 'paid')
         if start_date and end_date:
-            query = query.filter(Billing.created_at.between(start_date, end_date))
-        total_revenue = sum([amount for (amount,) in query.all()])
+            period_billings = session.query(Billing).filter(Billing.created_at.between(start_date, end_date))
+        total_revenue = sum([amount for (total_amount,) in period_billings.all()])
         return {"total_revenue": round(total_revenue, 2)}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to generate revenue report")
@@ -263,7 +262,7 @@ def get_staff_performance(session: Session = Depends(get_db)):
         staff_ids = session.query(User.id).filter(User.role == 'staff').all()
         performance = {}
         for (staff_id,) in staff_ids:
-            completed_tasks = session.query(Housekeeping).filter(
+            completed_hk = session.query(Housekeeping).filter(
                 Housekeeping.staff_id == staff_id,
                 Housekeeping.status == 'completed'
             ).count()
@@ -272,7 +271,7 @@ def get_staff_performance(session: Session = Depends(get_db)):
                 Order.status.in_(['served', 'billed'])
             ).count()
             performance[staff_id] = {
-                "housekeeping_completed": completed_tasks,
+                "housekeeping_completed": completed_hk,
                 "orders_served": orders_served
             }
         return performance
