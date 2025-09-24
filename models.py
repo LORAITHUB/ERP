@@ -51,16 +51,10 @@ class Housekeeping(Base):
 
     room = relationship("Room", back_populates="housekeeping")
 
-    staff_id = Column(Integer, ForeignKey("staff.id"))  # <-- Add staff_id column
-    staff = relationship("Staff") 
-
-'''
 class RoomType(enum.Enum):
     single = "single"
     double = "double"
     suite = "suite"
-=======
->>>>>>> 7227cb2ed5c59ea220ded8dfcc8f1b76e160caba
 
 class TableStatus(enum.Enum):
     available = "available"
@@ -150,4 +144,4 @@ class Inventory(Base):
     unit = Column(String(50), nullable=False)
     threshold = Column(Integer, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-'''
+
