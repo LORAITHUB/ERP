@@ -47,7 +47,8 @@ class Housekeeping(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     room_id = Column(Integer, ForeignKey("rooms.id"))
-    status = Column(String, default="pending")  
+    status = Column(String, default="pending")
+    staff_id = Column(Integer, ForeignKey("users.id"))
 
     room = relationship("Room", back_populates="housekeeping")
 
@@ -86,7 +87,7 @@ class Reservation(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False)
     table_id = Column(Integer, ForeignKey("tables.id"), nullable=False)
-    reservation_time = Column(DateTime, default=datetime.utcnow)
+    reservation_time = Column(DateTime, default=datetime.now)
     status = Column(Enum(ReservationStatus), default=ReservationStatus.pending)
 
     table = relationship("Table", back_populates="reservations")
@@ -108,7 +109,7 @@ class Order(Base):
     staff_id = Column(Integer, nullable=False)
     total_price = Column(Numeric(10, 2), default=0.00)
     status = Column(Enum(OrderStatus), default=OrderStatus.pending)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now)
 
     table = relationship("Table", back_populates="orders")
     order_items = relationship("OrderItem", back_populates="order")
@@ -143,5 +144,4 @@ class Inventory(Base):
     quantity = Column(Integer, nullable=False)
     unit = Column(String(50), nullable=False)
     threshold = Column(Integer, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.now)

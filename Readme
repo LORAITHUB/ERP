@@ -20,6 +20,10 @@ database, providing scalability, security, and flexibility.
 
 -Authentication Ready: Manager/Staff role-based endpoints
 
+-Reports: Get the performance reports on staff, status on the rooms, and revenue for given period of time
+
+-Notifications: Get ALERTS on the Low_stock and Over-Booking
+
 #Backend (Tech Stack):
 -FastAPI
 -PostgreSQL
@@ -35,7 +39,9 @@ database, providing scalability, security, and flexibility.
 - `Login API`
 - 'profile'
 - 'manager-only'
-
+-'add menu items'
+-'create order'
+-'update order'
 =======
 - 'checkin booking'
 - 'checkout booking'
@@ -99,12 +105,9 @@ cd ERP
 mkdir hospitality
 cd ERP
 
-<<<<<<< HEAD
-mkdir hot
-=======
 mkdir hoteltask_merge
 cd ERP
->>>>>>> 7227cb2ed5c59ea220ded8dfcc8f1b76e160caba
+
 
 3. **Set Up a Virtual Environment**
    ```bash
@@ -162,6 +165,19 @@ PUT /bookings/{id}/checkout → Mark check-out
 
 POST /housekeeping → Add housekeeping task
 
+
+
+7. Reports API
+Endpoints:
+- GET /reports/occupancy – Occupancy report
+- GET /reports/revenue – Revenue report
+- GET /reports/staff-performance – Staff performance metrics
+
+8. Notifications API
+- POST /notifications/low-stock – Trigger alert for inventory
+- POST /notifications/overbooking – Trigger alert for booking conflict
+
+
 ##implementation
 
 1.Define Models:
@@ -204,6 +220,10 @@ In auth.py, add functions for:
 -POST /create_tables → Create a new table with table number, capacity, and status.
 -POST /reservations → Create a new reservation for a table.
 -GET /menu_items → Retrieve a list of all menu items.
+
+
+-GET /reports -> get reports on the occupancy, revenue and staff performance
+-POST /notifications -> get alerts on low-stock and overbooking
 
 6.Set Up Role-Based Access:
 -Use dependency injection (Depends) to secure routes.

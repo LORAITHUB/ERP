@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-import os
+import os,re
 from typing import List
 
 import models
@@ -31,6 +31,14 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire, "iat": now})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def validate_password(password: str) -> bool:
+    # At least 8 characters, at least 1 letter, at least 1 number
+    return (
+        len(password) >= 8
+        and re.search(r"[A-Za-z]", password)
+        and re.search(r"\d", password)
+    )
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:

@@ -1,16 +1,19 @@
+from collections import defaultdict
+from datetime import timedelta
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
 import models
 import schemas
 import crud
 import database
 from database import engine, Base, get_db
+from models import *
 from auth import (
     get_password_hash,
     verify_password,
     create_access_token,
+    validate_password,
     get_current_user,
     require_roles
 )
@@ -19,22 +22,35 @@ app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
+from fastapi import HTTPException, status
+
 @app.post("/register", response_model=schemas.UserResponse)
 def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
+    if not validate_password(payload.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters, include letters and numbers"
+        )
+
+
     existing = db.query(models.User).filter(models.User.email == payload.email).first()
     if existing:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    hashed_password = get_password_hash(payload.password)
     user = models.User(
         name=payload.name,
         email=payload.email,
-        password_hash=get_password_hash(payload.password),
+        password_hash=hashed_password,
         role=models.RoleEnum(payload.role.value)
     )
     db.add(user)
     db.commit()
     db.refresh(user)
     return user
+
 
 @app.post("/login", response_model=schemas.TokenResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -58,8 +74,6 @@ def manager_only(current_user: models.User = Depends(require_roles([models.RoleE
 def root():
     return {"status": "ok", "service": "auth"}
 
-
-
 @app.get("/rooms", response_model=list[schemas.Room])
 def get_rooms(db: Session = Depends(get_db)):
     return crud.get_rooms(db)
@@ -77,6 +91,7 @@ def update_room_status(room_id: int, update: schemas.RoomStatusUpdate, db: Sessi
     return {"message": f"Room {room_id} status updated to {update.status}"}
 
 # ---- Bookings ----
+
 @app.post("/bookings", response_model=schemas.Booking)
 def create_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)):
     return crud.create_booking(db, booking)
@@ -97,6 +112,9 @@ def create_housekeeping(hk: schemas.HousekeepingCreate, db: Session = Depends(ge
 @app.put("/housekeeping/{hk_id}", response_model=schemas.Housekeeping)
 def update_housekeeping(hk_id: int, status: str, db: Session = Depends(get_db)):
     return crud.update_housekeeping(db, hk_id, status)
+
+
+#----------Restaurant Management---------
 
 @app.get("/tables", response_model=list[schemas.TableResponse])
 def list_tables(db: Session = Depends(get_db)):
@@ -187,6 +205,7 @@ def update_order_status(order_id: int, req: schemas.UpdateOrderStatus, db: Sessi
     db.refresh(order)
     return order
 
+#-----------Billing---------------
 
 @app.post("/billing", response_model=schemas.BillingOut)
 def create_billing(bill: schemas.BillingCreate, db: Session = Depends(get_db)):
@@ -202,7 +221,8 @@ def get_billing(id: int, db: Session = Depends(get_db)):
     if not bill:
         raise HTTPException(status_code=404, detail="Billing not found")
     return bill
- 
+
+#--------------Inventory----------------
 
 @app.get("/inventory", response_model=list[schemas.InventoryOut])
 def list_inventory(db: Session = Depends(database.get_db)):
@@ -232,6 +252,8 @@ def low_stock_items(db: Session = Depends(get_db)):
     items = crud.get_low_stock_items(db)
     return items
 
+#----------Reports & Notifications------------
+
 @app.get("/reports/occupancy")
 def get_occupancy_report(session: Session = Depends(get_db)):
     try:
@@ -249,12 +271,27 @@ def get_occupancy_report(session: Session = Depends(get_db)):
 @app.get("/reports/revenue")
 def get_revenue_report(session: Session = Depends(get_db), start_date=None, end_date=None):
     try:
-        if start_date and end_date:
-            period_billings = session.query(Billing).filter(Billing.created_at.between(start_date, end_date))
-        total_revenue = sum([amount for (total_amount,) in period_billings.all()])
+        # Set defaults inside the function
+        if start_date is None:
+            start_date = datetime.now() - timedelta(days=30)
+        if end_date is None:
+            end_date = datetime.now()
+
+        period_billings = session.query(Billing).filter(
+            Billing.created_at.between(start_date, end_date)
+        )
+
+        total_revenue = sum([billing.total_amount for billing in period_billings.all()])
         return {"total_revenue": round(total_revenue, 2)}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to generate revenue report")
+        # Error reporting with safe fallback
+        billing_ids = []
+        try:
+            billing_ids = [billing.id for billing in period_billings.all()]
+        except Exception:
+            pass
+        return {"error": str(e), "billing_ids": billing_ids}
 
 @app.get("/reports/staff-performance")
 def get_staff_performance(session: Session = Depends(get_db)):
