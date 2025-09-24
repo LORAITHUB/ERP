@@ -35,7 +35,9 @@ database, providing scalability, security, and flexibility.
 - `Login API`
 - 'profile'
 - 'manager-only'
-
+-'add menu items'
+-'create order'
+-'update order'
 =======
 - 'checkin booking'
 - 'checkout booking'
