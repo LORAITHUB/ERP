@@ -26,25 +26,15 @@ from fastapi import HTTPException, status
 
 @app.post("/register", response_model=schemas.UserResponse)
 def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
-    if not validate_password(payload.password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be at least 8 characters, include letters and numbers"
-        )
-
-
     existing = db.query(models.User).filter(models.User.email == payload.email).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
-    hashed_password = get_password_hash(payload.password)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+
     user = models.User(
         name=payload.name,
         email=payload.email,
-        password_hash=hashed_password,
-        role=models.RoleEnum(payload.role.value)
+        password_hash=get_password_hash(payload.password),
+        role=schemas.Role(payload.role.value)
     )
     db.add(user)
     db.commit()
