@@ -51,14 +51,14 @@ def checkout_booking(db: Session, booking_id: int):
 
 
 def create_housekeeping(db: Session, housekeeping: schemas.HousekeepingCreate):
-    db_hk = models.Housekeeping(**housekeeping.dict())
+    db_hk = schemas.Housekeeping(**housekeeping.dict())
     db.add(db_hk)
     db.commit()
     db.refresh(db_hk)
     return db_hk
 
 def update_housekeeping(db: Session, hk_id: int, status: str):
-    db_hk = db.query(models.Housekeeping).filter(models.Housekeeping.id == hk_id).first()
+    db_hk = db.query(schemas.Housekeeping).filter(schemas.Housekeeping.id == hk_id).first()
     if db_hk:
         db_hk.status = status
         if status == "completed":

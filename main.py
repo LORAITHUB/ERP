@@ -13,6 +13,7 @@ from auth import (
     get_password_hash,
     verify_password,
     create_access_token,
+    validate_password,
     get_current_user,
     require_roles
 )
@@ -20,6 +21,8 @@ from auth import (
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
+
+from fastapi import HTTPException, status
 
 @app.post("/register", response_model=schemas.UserResponse)
 def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
@@ -31,12 +34,13 @@ def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
         name=payload.name,
         email=payload.email,
         password_hash=get_password_hash(payload.password),
-        role=models.RoleEnum(payload.role.value)
+        role=schemas.Role(payload.role.value)
     )
     db.add(user)
     db.commit()
     db.refresh(user)
     return user
+
 
 @app.post("/login", response_model=schemas.TokenResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
