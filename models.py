@@ -47,10 +47,14 @@ class Housekeeping(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     room_id = Column(Integer, ForeignKey("rooms.id"))
-    status = Column(String, default="pending")
     staff_id = Column(Integer, ForeignKey("users.id"))
+    status = Column(String, default="pending")
 
     room = relationship("Room", back_populates="housekeeping")
+    staff = relationship("User")
+
+    
+
 
 class RoomType(enum.Enum):
     single = "single"
@@ -71,6 +75,7 @@ class OrderStatus(enum.Enum):
     pending = "pending"
     served = "served"
     billed = "billed"
+    
 
 class Table(Base):
     __tablename__ = "tables"

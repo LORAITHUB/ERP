@@ -50,22 +50,56 @@ def checkout_booking(db: Session, booking_id: int):
     return booking
 
 
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+import models, schemas
+
+# ✅ Create housekeeping task
 def create_housekeeping(db: Session, housekeeping: schemas.HousekeepingCreate):
-    db_hk = schemas.Housekeeping(**housekeeping.dict())
+    # check if room exists
+    room = db.query(models.Room).filter(models.Room.id == housekeeping.room_id).first()
+    if not room:
+        raise HTTPException(status_code=404, detail=f"Room {housekeeping.room_id} not found")
+
+    # check if staff exists
+    staff = db.query(models.User).filter(models.User.id == housekeeping.staff_id).first()
+    if not staff:
+        raise HTTPException(status_code=404, detail=f"Staff {housekeeping.staff_id} not found")
+
+    # ✅ only allow staff role
+    if staff.role != models.RoleEnum.staff:
+        raise HTTPException(status_code=400, detail=f"User {housekeeping.staff_id} is not a staff member")
+
+    # create housekeeping task
+    db_hk = models.Housekeeping(
+        room_id=housekeeping.room_id,
+        staff_id=housekeeping.staff_id,
+        status=housekeeping.status
+    )
     db.add(db_hk)
     db.commit()
     db.refresh(db_hk)
     return db_hk
 
+
+# ✅ Update housekeeping status
 def update_housekeeping(db: Session, hk_id: int, status: str):
-    db_hk = db.query(schemas.Housekeeping).filter(schemas.Housekeeping.id == hk_id).first()
-    if db_hk:
-        db_hk.status = status
-        if status == "completed":
-            update_room_status(db, db_hk.room_id, "available")
-        db.commit()
-        db.refresh(db_hk)
+    db_hk = db.query(models.Housekeeping).filter(models.Housekeeping.id == hk_id).first()
+    if not db_hk:
+        raise HTTPException(status_code=404, detail=f"Housekeeping task {hk_id} not found")
+
+    db_hk.status = status
+
+    # if housekeeping is completed → mark room available
+    if status == "completed":
+        room = db.query(models.Room).filter(models.Room.id == db_hk.room_id).first()
+        if room:
+            room.status = "available"
+
+    db.commit()
+    db.refresh(db_hk)
     return db_hk
+
 
 
 def get_inventory_items(db: Session):
