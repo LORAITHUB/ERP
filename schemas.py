@@ -1,7 +1,7 @@
-from pydantic import BaseModel, EmailStr,constr
+from pydantic import BaseModel, EmailStr,constr,field_validator
 from typing import Optional, List
 from datetime import datetime
-import enum
+import enum,re
 
 class Role(str, enum.Enum):
     manager = "manager"
@@ -14,6 +14,34 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: constr(min_length=6)
     role: Optional[Role] = Role.guest
+    @field_validator("name")
+    @classmethod
+    def name_must_be_alphabets(cls, v):
+        if not re.match(r'^[A-Za-z\s]+$', v):
+            raise ValueError("Name must contain only alphabets")
+        return v
+
+    @field_validator("email")
+    @classmethod
+    def email_must_be_gmail(cls, v):
+        if not v.endswith("@gmail.com"):
+            raise ValueError("Email must be a Gmail address (must end with @gmail.com)")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v):
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        if not re.search(r'[A-Z]', v):
+            raise ValueError("Password must include at least one uppercase letter")
+        if not re.search(r'[a-z]', v):
+            raise ValueError("Password must include at least one lowercase letter")
+        if not re.search(r'\d', v):
+            raise ValueError("Password must include at least one number")
+        if not re.search(r'[@$!#%*?&]', v):
+            raise ValueError("Password must include at least one special character (@, $, !, #, %, *, ?, &)")
+        return v
 
 class LoginRequest(BaseModel):
     email: EmailStr
