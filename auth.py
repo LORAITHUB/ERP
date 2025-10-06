@@ -32,15 +32,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     to_encode.update({"exp": expire, "iat": now})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def validate_password(password: str) -> bool:
-    # At least 8 characters, at least 1 letter, at least 1 number
-    return (
-        len(password) >= 8
-        and re.search(r"[A-Za-z]", password)
-        and re.search(r"\d", password)
-    )
-
-
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
