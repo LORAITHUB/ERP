@@ -13,7 +13,6 @@ from auth import (
     get_password_hash,
     verify_password,
     create_access_token,
-    validate_password,
     get_current_user,
     require_roles
 )
